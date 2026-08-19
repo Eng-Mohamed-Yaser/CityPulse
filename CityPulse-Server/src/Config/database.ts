@@ -7,7 +7,6 @@ export const connectDB = async()=>{
     }
     catch(error){
         console.log(`The Error in Database is ${error}`);
-        
     }
 }
 

@@ -8,4 +8,3 @@ export const env={
     jwtRefreshSecret: process.env.JWT_REFRESH_SECRET??"",
     PORT:Number(process.env.PORT)
 }
-
