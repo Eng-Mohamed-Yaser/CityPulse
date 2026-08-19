@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from "cors";
-import issueGroupsRouter from './routes/issueGroupe.routes.js';
+import issueGroupsRouter from './routes/issueGroups.routes.js';
 import { connectDB } from './config/database.js'
 import { notFound } from './middleware/notFound.middleware.js';
 
