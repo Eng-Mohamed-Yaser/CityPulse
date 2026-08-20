@@ -9,31 +9,48 @@ import {
   recalculateIssueGroupPriorityController,
 } from '../controllers/issueGroups.controller.js';
 
+import {
+  getIssueGroupsValidator,
+  getIssueGroupByIdValidator,
+  getNearbyIssueGroupsValidator,
+  updateIssueGroupStatusValidator,
+  escalateIssueGroupSeverityValidator,
+  recalculateIssueGroupPriorityValidator,
+} from '../validators/issueGroups.validator.js';
+
+import { validate } from '../middleware/validate.middleware.js';
+
 const router = Router();
 
-/*
- * IMPORTANT:
- * /nearby must come BEFORE /:id
- *
- * Otherwise Express can interpret:
- *
- * /nearby
- *
- * as:
- *
- * /:id
- */
 
-router.get('/nearby', getNearbyIssueGroupsController);
+router.get('/nearby', getNearbyIssueGroupsValidator, validate,  getNearbyIssueGroupsController);
 
-router.get('/', getIssueGroupsController);
+router.get(
+  '/',getIssueGroupsValidator, validate,
+  getIssueGroupsController);
 
-router.get('/:id', getIssueGroupByIdController);
 
-router.patch('/:id/status', updateIssueGroupStatusController);
+router.get(
+  '/:id',
+  getIssueGroupByIdValidator, validate,
+  getIssueGroupByIdController);
 
-router.patch('/:id/severity', escalateIssueGroupSeverityController);
 
-router.post('/:id/recalculate-priority', recalculateIssueGroupPriorityController);
+router.patch(
+  '/:id/status',
+  updateIssueGroupStatusValidator, validate,
+  updateIssueGroupStatusController);
+
+
+router.patch(
+  '/:id/severity',
+  escalateIssueGroupSeverityValidator, validate,
+  escalateIssueGroupSeverityController);
+
+
+router.post(
+  '/:id/recalculate-priority',
+  recalculateIssueGroupPriorityValidator, validate,
+  recalculateIssueGroupPriorityController);
 
 export default router;
