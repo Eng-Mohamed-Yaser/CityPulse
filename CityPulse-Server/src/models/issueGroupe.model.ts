@@ -66,16 +66,11 @@ export interface IIssueGroupMethods {
     note?: string | null,
   ): Promise<HydratedIssueGroupDocument>;
 
-  escalateSeverity(
-    newSeverity: IssueSeverity,
-  ): Promise<HydratedIssueGroupDocument>;
+  escalateSeverity( newSeverity: IssueSeverity, ): Promise<HydratedIssueGroupDocument>;
 }
 
 export interface IIssueGroupModel extends Model<
-  IIssueGroup,
-  {},
-  IIssueGroupMethods
-> {
+  IIssueGroup, {}, IIssueGroupMethods> {
   findNearby(
     category: IssueCategory,
     longitude: number,
@@ -88,10 +83,7 @@ export interface IIssueGroupModel extends Model<
    Hydrated Document
 ========================================================= */
 
-export type HydratedIssueGroupDocument = HydratedDocument<
-  IIssueGroup,
-  IIssueGroupMethods
->;
+export type HydratedIssueGroupDocument = HydratedDocument<IIssueGroup, IIssueGroupMethods>;
 
 /* =========================================================
    Status Transition Rules
@@ -136,11 +128,7 @@ const statusHistorySchema = new Schema<IStatusHistory>(
   },
 );
 
-const issueGroupSchema = new Schema<
-  IIssueGroup,
-  IIssueGroupModel,
-  IIssueGroupMethods
->(
+const issueGroupSchema = new Schema<IIssueGroup, IIssueGroupModel, IIssueGroupMethods>(
   {
     category: {
       type: String,
@@ -206,19 +194,11 @@ const issueGroupSchema = new Schema<
       default: Date.now,
     },
 
-    /* -----------------------------------------------------
-       Priority
-    ----------------------------------------------------- */
-
     priorityScore: {
       type: Number,
       required: true,
       min: [0, "Priority score cannot be negative"],
     },
-
-    /* -----------------------------------------------------
-       Severity
-    ----------------------------------------------------- */
 
     severity: {
       type: String,
@@ -226,20 +206,12 @@ const issueGroupSchema = new Schema<
       required: true,
     },
 
-    /* -----------------------------------------------------
-       Status
-    ----------------------------------------------------- */
-
     status: {
       type: String,
       enum: ISSUE_STATUSES,
       required: true,
       default: "Pending",
     },
-
-    /* -----------------------------------------------------
-       Status History
-    ----------------------------------------------------- */
 
     statusHistory: {
       type: [statusHistorySchema],
@@ -254,13 +226,6 @@ const issueGroupSchema = new Schema<
   },
 );
 
-/* =========================================================
-   Indexes
-========================================================= */
-
-/**
- * Required for geospatial queries such as $near.
- */
 issueGroupSchema.index(
   { centerLocation: "2dsphere" },
   {
@@ -268,9 +233,6 @@ issueGroupSchema.index(
   },
 );
 
-/**
- * Dashboard sorting by highest priority.
- */
 issueGroupSchema.index(
   { priorityScore: -1 },
   {
@@ -278,9 +240,6 @@ issueGroupSchema.index(
   },
 );
 
-/**
- * Dashboard filtering by category + status.
- */
 issueGroupSchema.index(
   { category: 1, status: 1 },
   {
@@ -341,9 +300,7 @@ issueGroupSchema.methods.updateStatus = async function (
    Instance Method: Escalate Severity
 ========================================================= */
 
-issueGroupSchema.methods.escalateSeverity = async function (
-  newSeverity: IssueSeverity,
-): Promise<HydratedIssueGroupDocument> {
+issueGroupSchema.methods.escalateSeverity = async function (newSeverity: IssueSeverity,): Promise<HydratedIssueGroupDocument> {
   const currentIndex = ISSUE_SEVERITIES.indexOf(this.severity);
   const newIndex = ISSUE_SEVERITIES.indexOf(newSeverity);
 

@@ -15,10 +15,6 @@ const SEVERITY_WEIGHT: Record<IssueSeverity, number> = {
   Critical: 4,
 };
 
-/* =========================================================
-   Types
-========================================================= */
-
 interface ICreateIssueGroupData {
   category: IssueCategory;
   longitude: number;
@@ -46,44 +42,21 @@ interface IUpdateStatusData {
  * recencyBonus:
  * max(0, 20 - daysSinceLastReport)
  */
-export const calculatePriorityScore = (
-  reportCount: number,
-  severity: IssueSeverity,
-  lastReportAt: Date
-): number => {
+export const calculatePriorityScore = ( reportCount: number, severity: IssueSeverity, lastReportAt: Date): number => {
   const severityWeight = SEVERITY_WEIGHT[severity];
 
   const millisecondsPerDay = 1000 * 60 * 60 * 24;
 
-  const daysSinceLastReport =
-    (Date.now() - lastReportAt.getTime()) /
-    millisecondsPerDay;
+  const daysSinceLastReport = (Date.now() - lastReportAt.getTime()) / millisecondsPerDay;
 
-  const recencyBonus = Math.max(
-    0,
-    20 - daysSinceLastReport
-  );
+  const recencyBonus = Math.max(  0,20 - daysSinceLastReport);
 
-  return (
-    reportCount * severityWeight * 10 +
-    recencyBonus
-  );
+  return ( reportCount * severityWeight * 10 + recencyBonus);
 };
 
-/* =========================================================
-   Find Group
-========================================================= */
 
-/**
- * Find the nearest issue group for the same category.
- *
- * Used mainly when a new report is created.
- */
 export const findNearbyGroup = async (
-  category: IssueCategory,
-  longitude: number,
-  latitude: number
-): Promise<HydratedIssueGroupDocument | null> => {
+  category: IssueCategory, longitude: number, latitude: number ): Promise<HydratedIssueGroupDocument | null> => {
   const groups = await IssueGroup.findNearby(
     category,
     longitude,
@@ -94,27 +67,13 @@ export const findNearbyGroup = async (
   return groups[0] ?? null;
 };
 
-/* =========================================================
-   Create Group
-========================================================= */
 
-export const createIssueGroup = async (
-  data: ICreateIssueGroupData
-): Promise<HydratedIssueGroupDocument> => {
-  const {
-    category,
-    longitude,
-    latitude,
-    severity,
-  } = data;
+export const createIssueGroup = async ( data: ICreateIssueGroupData ): Promise<HydratedIssueGroupDocument> => {
+  const { category, longitude, latitude, severity, } = data;
 
   const now = new Date();
 
-  const priorityScore = calculatePriorityScore(
-    1,
-    severity,
-    now
-  );
+  const priorityScore = calculatePriorityScore(1, severity, now);
 
   const issueGroup = await IssueGroup.create({
     category,
@@ -147,10 +106,6 @@ export const createIssueGroup = async (
   return issueGroup;
 };
 
-/* =========================================================
-   Find Or Create Group
-========================================================= */
-
 /**
  * Find an existing nearby group.
  *
@@ -163,21 +118,10 @@ export const createIssueGroup = async (
  * If not found:
  *   - create a new group
  */
-export const findOrCreateGroup = async (
-  data: ICreateIssueGroupData
-): Promise<HydratedIssueGroupDocument> => {
-  const {
-    category,
-    longitude,
-    latitude,
-    severity,
-  } = data;
+export const findOrCreateGroup = async ( data: ICreateIssueGroupData): Promise<HydratedIssueGroupDocument> => {
+  const { category, longitude, latitude, severity, } = data;
 
-  const existingGroup = await findNearbyGroup(
-    category,
-    longitude,
-    latitude
-  );
+  const existingGroup = await findNearbyGroup(category, longitude, latitude );
 
   if (!existingGroup) {
     return createIssueGroup(data);
