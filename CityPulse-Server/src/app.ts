@@ -1,18 +1,29 @@
 import express from 'express';
 import cors from "cors";
+import cookieParser from 'cookie-parser';
 
+import authRouter from './routes/auth.routes.js';
 import issueGroupsRouter from './routes/issueGroups.routes.js';
 import reportsRouter from "./routes/reports.routes.js";
 
 import { notFound } from './middleware/notFound.middleware.js';
-import {errorHandler} from './middleware/errorHandler.middleware.js';
+import { errorHandler } from './middleware/errorHandler.middleware.js';
+import { env } from "../src/config/env.config.js";
 
 const app = express();
 
-app.use(cors())
-app.use(express.json());
+app.use(
+    cors({
+        origin: 'http://localhost:' + env.PORT,
+        credentials: true,
+    })
+);
 
-app.use('/api/reports',reportsRouter)
+app.use(express.json());
+app.use(cookieParser());
+
+app.use('/api/auth', authRouter);
+app.use('/api/reports', reportsRouter);
 app.use('/api/issue-groups', issueGroupsRouter);
 
 app.use(notFound)
