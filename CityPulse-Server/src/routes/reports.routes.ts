@@ -5,16 +5,17 @@ import {
     getReportById,
     updateReport,
     deleteReport
-} from "../controllers/reports.controller.js";
+} from "../controller/reports.controller.js";
 import { validateReport } from "../validators/reports.validator.js";
 import { validate } from "../middleware/validate.middleware.js";
+import { Authentication } from "../middleware/Authentication.middleware.js";
+import { AuthorizationAdmin } from "../middleware/Authorization.middle.js";
 
-const router = Router();
+export const ReportRouter = Router();
 
-router.post("/", validateReport, validate, createReport);
-router.get("/", getAllReports);
-router.get("/:id", getReportById);
-router.put("/:id", validateReport, validate, updateReport);
-router.delete("/:id", deleteReport);
+ReportRouter.post("/", Authentication, validateReport, validate, createReport);
+ReportRouter.get("/", Authentication, getAllReports);
+ReportRouter.get("/:id",Authentication, getReportById);
+ReportRouter.put("/:id",Authentication, AuthorizationAdmin, validateReport, validate, updateReport);
+ReportRouter.delete("/:id",Authentication,AuthorizationAdmin, deleteReport);
 
-export default router;

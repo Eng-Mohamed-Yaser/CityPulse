@@ -6,7 +6,7 @@ const MongoUser = new mongoose.Schema({
         required:true,
         trim:true,
         maxlength: 10,
-        minlength: 2,
+        minlength: 3,
     },
 
     email:{
@@ -47,3 +47,9 @@ const MongoUser = new mongoose.Schema({
 })
 
 export const UserModel = mongoose.model("Users",MongoUser);
+
+
+
+
+
+
