@@ -18,39 +18,65 @@ import {
   recalculateIssueGroupPriorityValidator,
 } from '../validators/issueGroups.validator.js';
 
-import { validate } from '../middleware/validate.middleware.js';
+import { validate } from '../middleware/validation.middleware.js';
+
+import { authenticate } from '../middleware/auth.middleware.js';
+import { authorize } from '../middleware/authorize.middleware.js';
 
 const router = Router();
 
 
-router.get('/nearby', getNearbyIssueGroupsValidator, validate,  getNearbyIssueGroupsController);
+router.get(
+  '/nearby',
+  authenticate,
+  getNearbyIssueGroupsValidator,
+  validate,
+  getNearbyIssueGroupsController
+);
 
 router.get(
-  '/',getIssueGroupsValidator, validate,
-  getIssueGroupsController);
+  '/',
+  authenticate,
+  getIssueGroupsValidator,
+  validate,
+  getIssueGroupsController
+);
 
 
 router.get(
   '/:id',
-  getIssueGroupByIdValidator, validate,
-  getIssueGroupByIdController);
+  authenticate,
+  getIssueGroupByIdValidator,
+  validate,
+  getIssueGroupByIdController
+);
 
 
 router.patch(
   '/:id/status',
-  updateIssueGroupStatusValidator, validate,
-  updateIssueGroupStatusController);
-
+  authenticate,
+  authorize('Admin'),
+  updateIssueGroupStatusValidator,
+  validate,
+  updateIssueGroupStatusController
+);
 
 router.patch(
   '/:id/severity',
-  escalateIssueGroupSeverityValidator, validate,
-  escalateIssueGroupSeverityController);
-
+  authenticate,
+  authorize('Admin'),
+  escalateIssueGroupSeverityValidator,
+  validate,
+  escalateIssueGroupSeverityController
+);
 
 router.post(
   '/:id/recalculate-priority',
-  recalculateIssueGroupPriorityValidator, validate,
-  recalculateIssueGroupPriorityController);
+  authenticate,
+  authorize('Admin'),
+  recalculateIssueGroupPriorityValidator,
+  validate,
+  recalculateIssueGroupPriorityController
+);
 
 export default router;
