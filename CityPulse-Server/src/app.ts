@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import authRouter from './routes/auth.routes.js';
 import issueGroupsRouter from './routes/issueGroups.routes.js';
 import reportsRouter from "./routes/reports.routes.js";
+import dashboardRouter from "./routes/dashboard.routes.js";
 
 import { notFound } from './middleware/notFound.middleware.js';
 import { errorHandler } from './middleware/errorHandler.middleware.js';
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use('/api/auth', authRouter);
 app.use('/api/reports', reportsRouter);
 app.use('/api/issue-groups', issueGroupsRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 app.use(notFound)
 app.use(errorHandler)
