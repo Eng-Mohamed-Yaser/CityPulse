@@ -9,7 +9,7 @@ import dashboardRouter from "./routes/dashboard.routes.js";
 
 import { notFound } from './middleware/notFound.middleware.js';
 import { errorHandler } from './middleware/errorHandler.middleware.js';
-import { env } from "../src/config/env.config.js";
+import { env } from "./config/env.config.js";
 
 const app = express();
 
