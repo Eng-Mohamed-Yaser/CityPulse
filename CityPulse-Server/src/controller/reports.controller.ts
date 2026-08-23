@@ -10,7 +10,7 @@ import { AppError } from "../utils/appError.js";
 
 export const createReport = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const userId = (req as any).user?._id;
+        const userId = (req as any).user?.id;
 
         if (!userId) {
             return next(new AppError("Unauthorized", 401));
