@@ -42,7 +42,7 @@ router.get(
 router.put(
     "/:id",
     authenticate,
-    authorize("Admin", "User"),
+    authorize("Admin", "Citizen"),
     validateReport,
     validate,
     updateReport

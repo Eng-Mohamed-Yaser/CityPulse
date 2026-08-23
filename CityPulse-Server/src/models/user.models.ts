@@ -1,6 +1,6 @@
 import { Schema, model, type HydratedDocument, type Model, } from 'mongoose';
 
-export type UserRole = 'User' | 'Admin';
+export type UserRole = 'Citizen' | 'Admin';
 
 export interface IUser {
   name: string;
@@ -42,8 +42,8 @@ const userSchema = new Schema<IUser>(
 
     role: {
       type: String,
-      enum: ['User', 'Admin'],
-      default: 'User',
+      enum: ['Citizen', 'Admin'],
+      default: 'Citizen',
     },
 
     isActive: {
