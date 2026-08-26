@@ -1,0 +1,40 @@
+/*
+ * Mobile drawer entry animation. Kept in CSS (not JS) so the global
+ * prefers-reduced-motion rule in styles.css neutralises it automatically.
+ */
+.mobile-drawer {
+  animation: drawer-in 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: top;
+}
+
+.profile-menu-item {
+  display: block;
+  width: 100%;
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ct-text-muted);
+  text-align: left;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.profile-menu-item + .profile-menu-item {
+  margin-top: 0.15rem;
+}
+
+.profile-menu-item:hover {
+  background: var(--ct-background-alt);
+  color: var(--ct-text);
+}
+
+@keyframes drawer-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,422 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import 'tailwindcss';
+
+/* Class-based dark mode (ThemeService toggles .dark on <html>) */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   Self-hosted typography
+   Variable-weight woff2 subsets in public/fonts (no third-party request).
+   Plus Jakarta Sans -> display/headings.  Inter -> body/interface.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/inter-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/inter-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url('/fonts/plus-jakarta-sans-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url('/fonts/plus-jakarta-sans-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* ==========================================================================
+   Semantic design tokens
+   Light and dark are authored independently — dark is a deliberately
+   blue-tinted deep navy scale, not an inversion of light. Values intentionally
+   match the slate/sky/indigo scales the existing issue-groups feature already
+   uses, so the new home page is visually consistent with the shipped app.
+   ========================================================================== */
+
+:root {
+  color-scheme: light;
+
+  --ct-background: #f8fafc;
+  --ct-background-alt: #f1f5f9;
+  --ct-surface: #ffffff;
+  --ct-surface-elevated: #ffffff;
+  --ct-surface-muted: #f8fafc;
+
+  --ct-text: #0f172a;
+  --ct-text-muted: #475569;
+  --ct-text-subtle: #64748b;
+  --ct-text-inverted: #f8fafc;
+
+  --ct-border: #e2e8f0;
+  --ct-border-strong: #cbd5e1;
+
+  --ct-primary: #4f46e5;
+  --ct-primary-hover: #4338ca;
+  --ct-primary-contrast: #ffffff;
+  --ct-primary-subtle: #eef2ff;
+
+  --ct-accent: #0891b2;
+  --ct-accent-subtle: #ecfeff;
+
+  --ct-success: #059669;
+  --ct-warning: #d97706;
+  --ct-danger: #dc2626;
+
+  /* Glass surfaces — tuned per theme rather than reused blindly. */
+  --ct-glass-bg: rgb(255 255 255 / 0.72);
+  --ct-glass-border: rgb(15 23 42 / 0.08);
+  --ct-glass-shadow: 0 8px 32px -12px rgb(15 23 42 / 0.12);
+  --ct-glass-highlight: rgb(255 255 255 / 0.85);
+  --ct-shadow-card: 0 18px 50px -28px rgb(15 23 42 / 0.28);
+}
+
+.dark {
+  color-scheme: dark;
+
+  --ct-background: #020617;
+  --ct-background-alt: #0f172a;
+  --ct-surface: #0f172a;
+  --ct-surface-elevated: #1e293b;
+  --ct-surface-muted: #0b1120;
+
+  --ct-text: #f8fafc;
+  --ct-text-muted: #94a3b8;
+  --ct-text-subtle: #64748b;
+  --ct-text-inverted: #0f172a;
+
+  --ct-border: #1e293b;
+  --ct-border-strong: #334155;
+
+  /* Lifted primary: indigo-600 lacks contrast on a near-black surface. */
+  --ct-primary: #6366f1;
+  --ct-primary-hover: #818cf8;
+  --ct-primary-contrast: #ffffff;
+  --ct-primary-subtle: #1e1b4b;
+
+  --ct-accent: #22d3ee;
+  --ct-accent-subtle: #083344;
+
+  --ct-success: #34d399;
+  --ct-warning: #fbbf24;
+  --ct-danger: #f87171;
+
+  --ct-glass-bg: rgb(15 23 42 / 0.62);
+  --ct-glass-border: rgb(255 255 255 / 0.08);
+  --ct-glass-shadow: 0 8px 32px -12px rgb(0 0 0 / 0.6);
+  --ct-glass-highlight: rgb(255 255 255 / 0.07);
+  --ct-shadow-card: 0 20px 60px -30px rgb(0 0 0 / 0.75);
+}
+
+/*
+ * `@theme inline` emits `var(--ct-*)` references rather than copying literal
+ * values, which is what lets the `.dark` overrides above take effect at
+ * runtime. A plain `@theme` block would freeze the light values.
+ */
+@theme inline {
+  --color-background: var(--ct-background);
+  --color-background-alt: var(--ct-background-alt);
+  --color-surface: var(--ct-surface);
+  --color-surface-elevated: var(--ct-surface-elevated);
+  --color-surface-muted: var(--ct-surface-muted);
+
+  --color-content: var(--ct-text);
+  --color-content-muted: var(--ct-text-muted);
+  --color-content-subtle: var(--ct-text-subtle);
+  --color-content-inverted: var(--ct-text-inverted);
+
+  --color-line: var(--ct-border);
+  --color-line-strong: var(--ct-border-strong);
+
+  --color-primary: var(--ct-primary);
+  --color-primary-hover: var(--ct-primary-hover);
+  --color-primary-contrast: var(--ct-primary-contrast);
+  --color-primary-subtle: var(--ct-primary-subtle);
+
+  --color-accent: var(--ct-accent);
+  --color-accent-subtle: var(--ct-accent-subtle);
+
+  --color-success: var(--ct-success);
+  --color-warning: var(--ct-warning);
+  --color-danger: var(--ct-danger);
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
+  --font-display: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui,
+    sans-serif;
+}
+
+/*
+ * Brand palette (indigo). Anchored on --color-brand-500: #6366f1, the accent
+ * already hard-coded in component-level focus styles (see home.css
+ * `.glass-input:focus`). Tailwind v4 silently drops utilities for undefined
+ * colours, so without this block every bg-brand, text-brand, from-brand,
+ * border-brand and shadow-brand utility in the header, footer and not-found
+ * templates emits no CSS.
+ */
+@theme {
+  --color-brand-50: #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+  --color-brand-950: #1e1b4b;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* Offset anchor targets so sticky navbar doesn't cover section headings. */
+    scroll-padding-top: 5rem;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100;
+    font-family: var(--font-sans);
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-sky-500;
+  }
+}
+
+/* ==========================================================================
+   Reusable surface + control patterns
+   Used selectively: glass is for chrome and decorative panels only. Primary
+   CTAs, form controls and text-heavy cards stay solid for contrast.
+   ========================================================================== */
+
+@utility glass-nav {
+  background: var(--ct-glass-bg);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border-bottom: 1px solid var(--ct-glass-border);
+  box-shadow: 0 10px 30px -24px rgb(15 23 42 / 0.55);
+}
+
+@utility glass-card {
+  background: var(--ct-glass-bg);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid var(--ct-glass-border);
+  box-shadow: var(--ct-glass-shadow);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 1px;
+    background: var(--ct-glass-highlight);
+    pointer-events: none;
+  }
+}
+
+@utility glass-panel {
+  background: var(--ct-glass-bg);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid var(--ct-glass-border);
+  box-shadow: var(--ct-glass-shadow);
+}
+
+@utility glass-widget {
+  background: color-mix(in oklab, var(--ct-surface) 55%, transparent);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--ct-glass-border);
+}
+
+/* Solid, high-contrast primary action — deliberately not glass. */
+@utility btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+    text-sm font-semibold transition-all duration-200
+    focus-visible:outline-2 focus-visible:outline-offset-2;
+  background: var(--ct-primary);
+  color: var(--ct-primary-contrast);
+  outline-color: var(--ct-primary);
+
+  &:hover {
+    background: var(--ct-primary-hover);
+  }
+}
+
+@utility btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3
+    text-sm font-semibold transition-all duration-200
+    focus-visible:outline-2 focus-visible:outline-offset-2;
+  background: var(--ct-surface);
+  color: var(--ct-text);
+  border: 1px solid var(--ct-border-strong);
+  outline-color: var(--ct-primary);
+
+  &:hover {
+    background: var(--ct-background-alt);
+    border-color: var(--ct-primary);
+  }
+}
+
+@utility section-eyebrow {
+  @apply inline-flex items-center gap-2 rounded-full px-3 py-1
+    text-xs font-semibold uppercase tracking-wider;
+  background: var(--ct-primary-subtle);
+  color: var(--ct-primary);
+}
+
+@utility section-title {
+  @apply text-3xl font-bold tracking-tight sm:text-4xl;
+  font-family: var(--font-display);
+  color: var(--ct-text);
+}
+
+@utility section-subtitle {
+  @apply mt-4 text-base leading-relaxed sm:text-lg;
+  color: var(--ct-text-muted);
+}
+
+@utility page-shell {
+  @apply min-h-[calc(100vh-4rem)] bg-background py-10 sm:py-14;
+}
+
+@utility page-container {
+  @apply mx-auto max-w-7xl space-y-8 px-4 sm:px-6 lg:px-8;
+}
+
+@utility metric-label {
+  @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-content-subtle;
+}
+
+@utility metric-value {
+  @apply mt-3 font-display text-3xl font-extrabold tracking-tight text-content sm:text-4xl;
+}
+
+@utility metric-note {
+  @apply mt-2 text-xs leading-relaxed text-content-muted;
+}
+
+@utility dashboard-icon {
+  @apply inline-flex h-10 w-10 items-center justify-center rounded-xl;
+}
+
+@utility empty-chart {
+  @apply mt-8 flex min-h-40 items-center justify-center rounded-xl border border-dashed
+    border-line-strong bg-background-alt px-5 text-center text-sm text-content-muted;
+}
+
+@utility section-number {
+  @apply flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-subtle
+    font-display text-sm font-bold text-primary;
+}
+
+@utility field-label {
+  @apply block text-sm font-medium text-content;
+}
+
+@utility field-input {
+  @apply mt-1.5 w-full rounded-xl border border-line bg-surface-muted px-3.5 py-2.5
+    text-sm text-content transition-colors placeholder:text-content-subtle
+    focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1
+    focus-visible:outline-primary;
+}
+
+@utility field-error {
+  @apply mt-1.5 text-xs text-danger;
+}
+
+@utility status-badge {
+  @apply inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-[11px]
+    font-semibold;
+}
+
+@utility status-pending {
+  @apply border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-800/60
+    dark:bg-amber-950/40 dark:text-amber-300;
+}
+
+@utility status-review {
+  @apply border-blue-200 bg-blue-50 text-blue-800 dark:border-blue-800/60
+    dark:bg-blue-950/40 dark:text-blue-300;
+}
+
+@utility status-progress {
+  @apply border-violet-200 bg-violet-50 text-violet-800 dark:border-violet-800/60
+    dark:bg-violet-950/40 dark:text-violet-300;
+}
+
+@utility status-resolved {
+  @apply border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800/60
+    dark:bg-emerald-950/40 dark:text-emerald-300;
+}
+
+/* ==========================================================================
+   Scroll-reveal animations
+   Elements start hidden only when motion is allowed, so a reduced-motion or
+   no-JS visitor always sees fully rendered content.
+   ========================================================================== */
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+
+  [data-reveal='scale'] {
+    transform: scale(0.97);
+  }
+
+  [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+  }
+}

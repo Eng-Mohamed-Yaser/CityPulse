@@ -1,0 +1,15 @@
+<main class="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-background px-4 py-16">
+  <section class="glass-panel w-full max-w-lg rounded-3xl p-8 text-center sm:p-12" aria-labelledby="forbidden-heading">
+    <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-danger/10 text-danger">
+      <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+      </svg>
+    </span>
+    <p class="mt-6 font-display text-6xl font-extrabold tracking-tight text-danger">403</p>
+    <h1 id="forbidden-heading" class="mt-3 font-display text-2xl font-bold text-content">Access Restricted</h1>
+    <p class="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-content-muted">
+      You are signed in, but your account does not have permission to access this administration area.
+    </p>
+    <a routerLink="/" class="btn-primary mt-8">Return Home</a>
+  </section>
+</main>

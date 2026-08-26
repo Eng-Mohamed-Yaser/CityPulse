@@ -1,0 +1,310 @@
+<header
+  class="glass-nav fixed inset-x-0 top-0 z-50 w-full shadow-sm transition-shadow duration-300"
+>
+  <nav
+    class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
+    aria-label="Primary"
+  >
+    <!-- Brand -->
+    <a
+      routerLink="/"
+      (click)="closeMenus()"
+      class="flex shrink-0 items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    >
+      <span
+        class="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-contrast"
+      >
+        <svg
+          class="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2.25"
+          aria-hidden="true"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </span>
+      <span class="font-display text-lg font-bold tracking-tight text-content">CityPulse</span>
+      <span class="hidden border-l border-line pl-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-content-subtle sm:inline">Civic intelligence</span>
+    </a>
+
+    <!-- Desktop navigation -->
+    <ul class="hidden items-center gap-1 lg:flex">
+      <li>
+        <a
+          routerLink="/"
+          routerLinkActive="bg-primary-subtle text-primary"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-content-muted transition-colors hover:bg-background-alt hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Home
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="/reports"
+          routerLinkActive="bg-primary-subtle text-primary"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-content-muted transition-colors hover:bg-background-alt hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Issue Reports
+        </a>
+      </li>
+      <li>
+        <a
+          routerLink="/"
+          fragment="features"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-content-muted transition-colors hover:bg-background-alt hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Features
+        </a>
+      </li>
+      @if (isAdmin()) {
+        <li>
+          <a routerLink="/admin/dashboard" routerLinkActive="bg-primary-subtle text-primary" class="rounded-lg px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+            Admin Dashboard
+          </a>
+        </li>
+        <li>
+          <a routerLink="/admin/issue-groups" routerLinkActive="bg-primary-subtle text-primary" class="rounded-lg px-3 py-2 text-sm font-semibold text-primary transition-colors hover:bg-primary-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+            Issue Groups
+          </a>
+        </li>
+      }
+      <li>
+        <a
+          routerLink="/"
+          fragment="about"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-content-muted transition-colors hover:bg-background-alt hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          About
+        </a>
+      </li>
+    </ul>
+
+    <!-- Desktop actions -->
+    <div class="hidden items-center gap-2.5 lg:flex">
+      <app-theme-toggle />
+
+      @if (isAuthenticated()) {
+        <div class="relative">
+          <button
+            type="button"
+            (click)="toggleProfileMenu()"
+            [attr.aria-expanded]="profileMenuOpen()"
+            aria-haspopup="menu"
+            aria-controls="desktop-profile-menu"
+            class="inline-flex items-center gap-2 rounded-xl border border-line bg-surface/70 px-2.5 py-1.5 text-sm font-semibold text-content transition-colors hover:bg-background-alt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-contrast">
+              {{ profileInitials() }}
+            </span>
+            <span class="max-w-[9rem] truncate">{{ user()?.name }}</span>
+            <svg class="h-4 w-4 text-content-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+
+          @if (profileMenuOpen()) {
+            <div
+              id="desktop-profile-menu"
+              class="glass-panel absolute right-0 top-full mt-3 w-64 rounded-2xl p-2 shadow-xl"
+              role="menu"
+              aria-label="Profile menu"
+            >
+              <div class="border-b border-line px-3 py-3">
+                <p class="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-content-subtle">Account</p>
+                <p class="truncate text-sm font-semibold text-content">{{ user()?.name }}</p>
+                <p class="truncate text-xs text-content-muted">{{ user()?.email }}</p>
+              </div>
+              <a routerLink="/profile" (click)="closeMenus()" role="menuitem" class="profile-menu-item">
+                <svg class="mr-2 inline-block h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.1a7.5 7.5 0 0 1 15 0" /></svg>
+                Profile
+              </a>
+              <a routerLink="/reports/mine" (click)="closeMenus()" role="menuitem" class="profile-menu-item">
+                <svg class="mr-2 inline-block h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8 6h8M8 10h8M8 14h5m-8 7h10a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3H8a3 3 0 0 0-3 3v12a3 3 0 0 0 3 3Z" /></svg>
+                My Reports
+              </a>
+              <a routerLink="/profile" fragment="account" (click)="closeMenus()" role="menuitem" class="profile-menu-item">
+                <svg class="mr-2 inline-block h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Zm0 0v3m0-13.5v-3m7.5 7.5h-3m-9 0h-3" /></svg>
+                Account Information
+              </a>
+              @if (isAdmin()) {
+                <a routerLink="/admin/dashboard" (click)="closeMenus()" role="menuitem" class="profile-menu-item text-primary">Admin Dashboard</a>
+              }
+              <div class="my-2 border-t border-line"></div>
+              <button type="button" (click)="signOut()" role="menuitem" class="profile-menu-item text-danger">
+                <svg class="mr-2 inline-block h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3h-9" /></svg>
+                Sign Out
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <a
+          routerLink="/auth/login"
+          class="rounded-lg px-3 py-2 text-sm font-semibold text-content-muted transition-colors hover:bg-background-alt hover:text-content focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Login
+        </a>
+        <a
+          routerLink="/auth/register"
+          class="inline-flex items-center justify-center rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-primary-contrast transition-colors hover:bg-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        >
+          Register
+        </a>
+      }
+    </div>
+
+    <!-- Mobile controls -->
+    <div class="flex items-center gap-2 lg:hidden">
+      <app-theme-toggle />
+      <button
+        type="button"
+        (click)="toggleMobileMenu()"
+        [attr.aria-expanded]="isMobileMenuOpen()"
+        aria-controls="mobile-menu"
+        [attr.aria-label]="isMobileMenuOpen() ? 'Close main menu' : 'Open main menu'"
+        class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-line text-content transition-colors hover:bg-background-alt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      >
+        @if (isMobileMenuOpen()) {
+          <svg
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        } @else {
+          <svg
+            class="h-5 w-5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+          </svg>
+        }
+      </button>
+    </div>
+  </nav>
+
+  <!-- Mobile drawer: sits under the bar, does not cover the whole viewport -->
+  @if (isMobileMenuOpen()) {
+    <div
+      id="mobile-menu"
+      class="mobile-drawer border-t border-line bg-surface px-4 pb-5 pt-3 shadow-lg lg:hidden"
+    >
+      <ul class="flex flex-col gap-1">
+        <li>
+          <a
+            routerLink="/"
+            (click)="closeMenus()"
+            class="block rounded-lg px-3 py-2.5 text-sm font-medium text-content transition-colors hover:bg-background-alt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            Home
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/reports"
+            (click)="closeMobileMenu()"
+            class="block rounded-lg px-3 py-2.5 text-sm font-medium text-content transition-colors hover:bg-background-alt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            Issue Reports
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/"
+            fragment="features"
+            (click)="closeMobileMenu()"
+            class="block rounded-lg px-3 py-2.5 text-sm font-medium text-content transition-colors hover:bg-background-alt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            Features
+          </a>
+        </li>
+        <li>
+          <a
+            routerLink="/"
+            fragment="about"
+            (click)="closeMobileMenu()"
+            class="block rounded-lg px-3 py-2.5 text-sm font-medium text-content transition-colors hover:bg-background-alt focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            About
+          </a>
+        </li>
+        @if (isAdmin()) {
+          <li>
+            <a
+              routerLink="/admin/dashboard"
+              (click)="closeMenus()"
+              class="block rounded-lg px-3 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              Admin Dashboard
+            </a>
+          </li>
+          <li>
+            <a
+              routerLink="/admin/issue-groups"
+              (click)="closeMenus()"
+              class="block rounded-lg px-3 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            >
+              Issue Groups
+            </a>
+          </li>
+        }
+      </ul>
+
+      <div class="mt-4 flex flex-col gap-2 border-t border-line pt-4">
+        @if (isAuthenticated()) {
+          <button
+            type="button"
+            (click)="toggleProfileMenu()"
+            [attr.aria-expanded]="profileMenuOpen()"
+            aria-haspopup="menu"
+            aria-controls="mobile-profile-menu"
+            class="flex w-full items-center gap-3 rounded-xl border border-line bg-surface px-3 py-2.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-contrast">
+              {{ profileInitials() }}
+            </span>
+            <span class="min-w-0 flex-1">
+              <span class="block truncate text-sm font-semibold text-content">{{ user()?.name }}</span>
+              <span class="block truncate text-xs text-content-muted">{{ user()?.email }}</span>
+            </span>
+            <svg class="h-4 w-4 text-content-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+            </svg>
+          </button>
+
+          @if (profileMenuOpen()) {
+            <div id="mobile-profile-menu" class="mt-2 space-y-1 rounded-xl bg-background-alt p-2" role="menu" aria-label="Profile menu">
+              <a routerLink="/profile" (click)="closeMenus()" role="menuitem" class="profile-menu-item">Profile</a>
+              <a routerLink="/reports/mine" (click)="closeMenus()" role="menuitem" class="profile-menu-item">My Reports</a>
+              <a routerLink="/profile" fragment="account" (click)="closeMenus()" role="menuitem" class="profile-menu-item">Account Information</a>
+              @if (isAdmin()) {
+                <a routerLink="/admin/dashboard" (click)="closeMenus()" role="menuitem" class="profile-menu-item text-primary">Admin Dashboard</a>
+              }
+            </div>
+          }
+          <button type="button" (click)="signOut()" class="btn-secondary w-full">
+            Sign Out
+          </button>
+        } @else {
+          <a routerLink="/auth/login" (click)="closeMobileMenu()" class="btn-secondary w-full">
+            Login
+          </a>
+          <a routerLink="/auth/register" (click)="closeMobileMenu()" class="btn-primary w-full">
+            Register
+          </a>
+        }
+      </div>
+    </div>
+  }
+</header>

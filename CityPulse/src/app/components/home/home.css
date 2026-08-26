@@ -1,0 +1,5 @@
+/*
+ * Home page styling comes entirely from the shared semantic tokens and Tailwind
+ * utilities in styles.css. The old glass/grid helpers that lived here were only
+ * used by the previous single-file markup and are no longer referenced.
+ */

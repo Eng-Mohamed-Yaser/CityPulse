@@ -1,0 +1,23 @@
+import { Routes } from '@angular/router';
+
+export const AUTH_ROUTES: Routes = [
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./pages/login/login.component').then((m) => m.LoginPageComponent),
+    title: 'Sign in - CityPulse',
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./pages/register/register.component').then(
+        (m) => m.RegisterPageComponent
+      ),
+    title: 'Create account - CityPulse',
+  },
+  {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'login',
+  },
+];
