@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -41,6 +41,19 @@ function coordinate(min: number, max: number): ValidatorFn {
   };
 }
 
+/** Lifecycle of the automatic geolocation lookup that runs when the page opens. */
+type LocationStatus = 'idle' | 'locating' | 'ready' | 'error';
+
+interface DetectedLocation {
+  readonly longitude: number;
+  readonly latitude: number;
+  /** Radius of uncertainty in metres, when the device reports one. */
+  readonly accuracy: number | null;
+}
+
+const MISSING_LOCATION_MESSAGE =
+  'This report still needs a location. Allow location access and retry the detection, or enter the coordinates manually.';
+
 @Component({
   selector: 'app-reports-page',
   standalone: true,
@@ -69,7 +82,7 @@ function coordinate(min: number, max: number): ValidatorFn {
         </header>
 
         @if (successReport(); as report) {
-          <section class="glass-panel rounded-2xl p-6 sm:p-8" role="status" aria-labelledby="success-heading">
+          <section class="glass-panel rounded-2xl border-success/30 p-6 sm:p-8" role="status" aria-live="polite" aria-labelledby="success-heading">
             <div class="flex items-start gap-4">
               <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-success/15 text-success">
                 <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -77,8 +90,8 @@ function coordinate(min: number, max: number): ValidatorFn {
                 </svg>
               </span>
               <div class="min-w-0">
-                <h2 id="success-heading" class="font-display text-xl font-bold text-content">Report submitted</h2>
-                <p class="mt-1 text-sm text-content-muted">Your report has been received and is being processed.</p>
+                <h2 id="success-heading" class="font-display text-xl font-bold text-content">Report added successfully</h2>
+                <p class="mt-1 text-sm text-content-muted">Your report was added successfully and is now being processed.</p>
               </div>
             </div>
             <dl class="mt-6 grid gap-4 border-t border-line pt-5 sm:grid-cols-3">
@@ -102,11 +115,16 @@ function coordinate(min: number, max: number): ValidatorFn {
           </section>
         } @else {
           @if (errorMessage()) {
-            <div class="flex items-start gap-3 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
+            <div class="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-danger" role="alert" aria-live="assertive">
+              <div class="flex items-start gap-3 text-sm">
               <svg class="mt-0.5 h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0Zm-9 3.75h.008v.008H12v-.008Z" />
               </svg>
-              <span>{{ errorMessage() }}</span>
+                <div>
+                  <p class="font-semibold">Report could not be added</p>
+                  <p class="mt-1 text-danger/80">{{ errorMessage() }}</p>
+                </div>
+              </div>
             </div>
           }
 
@@ -174,30 +192,81 @@ function coordinate(min: number, max: number): ValidatorFn {
                 <span class="section-number">02</span>
                 <div>
                   <h2 id="location-heading" class="font-display text-xl font-bold text-content">Location</h2>
-                  <p class="mt-1 text-sm text-content-muted">Coordinates are sent as GeoJSON order: longitude, then latitude.</p>
+                  <p class="mt-1 text-sm text-content-muted">CityPulse detects where you are automatically, so your report is grouped with nearby ones about the same issue.</p>
                 </div>
               </div>
 
-              @if (locationMessage()) {
-                <p class="mt-5 rounded-xl border border-line bg-background-alt px-4 py-3 text-sm text-content-muted" role="status">{{ locationMessage() }}</p>
+              <div class="mt-6" aria-live="polite">
+                @switch (locationStatus()) {
+                  @case ('locating') {
+                    <div class="flex items-center gap-3 rounded-xl border border-line bg-background-alt px-4 py-3.5 text-sm text-content-muted">
+                      <svg class="h-4 w-4 shrink-0 animate-spin text-primary" fill="none" viewBox="0 0 24 24" aria-hidden="true"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z" /></svg>
+                      <span>Detecting your location&hellip; allow location access if your browser asks.</span>
+                    </div>
+                  }
+                  @case ('ready') {
+                    <div class="rounded-xl border border-success/30 bg-success/10 px-4 py-4">
+                      <div class="flex flex-wrap items-start justify-between gap-4">
+                        <div class="flex min-w-0 items-start gap-3">
+                          <svg class="mt-0.5 h-5 w-5 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                          </svg>
+                          <div class="min-w-0">
+                            <p class="text-sm font-semibold text-content">Location detected automatically</p>
+                            <p class="mt-1 break-all font-mono text-xs text-content-muted">{{ coordinatesLabel() }}</p>
+                            @if (accuracyLabel(); as accuracy) {
+                              <p class="mt-1 text-xs text-content-subtle">{{ accuracy }}</p>
+                            }
+                          </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                          @if (mapUrl(); as url) {
+                            <a [href]="url" target="_blank" rel="noopener noreferrer" class="rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-xs font-semibold text-content transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">View on map</a>
+                          }
+                          <button type="button" (click)="detectLocation()" class="rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-xs font-semibold text-content transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Refresh</button>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                  @case ('error') {
+                    <div class="rounded-xl border border-warning/40 bg-warning/10 px-4 py-4">
+                      <div class="flex items-start gap-3">
+                        <svg class="mt-0.5 h-5 w-5 shrink-0 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 3.75h.008v.008H12v-.008Zm9-3.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                        <div class="min-w-0">
+                          <p class="text-sm font-semibold text-content">Automatic location unavailable</p>
+                          <p class="mt-1 text-sm text-content-muted">{{ locationMessage() }}</p>
+                          <button type="button" (click)="detectLocation()" class="mt-3 rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-xs font-semibold text-content transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Retry detection</button>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                }
+              </div>
+
+              @if (showManualLocation()) {
+                <div class="mt-5 border-t border-line pt-5">
+                  <p class="text-xs text-content-subtle">Manual fallback &mdash; coordinates are sent as GeoJSON order: longitude, then latitude.</p>
+                  <div class="mt-4 grid gap-5 sm:grid-cols-2">
+                    <div>
+                      <label for="longitude" class="field-label">Longitude <span class="text-danger" aria-hidden="true">*</span></label>
+                      <input id="longitude" type="number" inputmode="decimal" step="any" formControlName="longitude" class="field-input" [attr.aria-invalid]="isInvalid('longitude')" placeholder="e.g. 31.2357" />
+                      @if (isInvalid('longitude')) { <p class="field-error">Enter a longitude from -180 to 180.</p> }
+                    </div>
+                    <div>
+                      <label for="latitude" class="field-label">Latitude <span class="text-danger" aria-hidden="true">*</span></label>
+                      <input id="latitude" type="number" inputmode="decimal" step="any" formControlName="latitude" class="field-input" [attr.aria-invalid]="isInvalid('latitude')" placeholder="e.g. 30.0444" />
+                      @if (isInvalid('latitude')) { <p class="field-error">Enter a latitude from -90 to 90.</p> }
+                    </div>
+                  </div>
+                </div>
+              } @else if (locationStatus() === 'ready') {
+                <button type="button" (click)="enableManualLocation()" class="mt-4 rounded text-xs font-semibold text-primary underline decoration-dotted underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                  Location looks wrong? Enter coordinates manually
+                </button>
               }
-
-              <div class="mt-6 grid gap-5 sm:grid-cols-2">
-                <div>
-                  <label for="longitude" class="field-label">Longitude <span class="text-danger" aria-hidden="true">*</span></label>
-                  <input id="longitude" type="number" inputmode="decimal" step="any" formControlName="longitude" class="field-input" [attr.aria-invalid]="isInvalid('longitude')" placeholder="e.g. 31.2357" />
-                  @if (isInvalid('longitude')) { <p class="field-error">Enter a longitude from -180 to 180.</p> }
-                </div>
-                <div>
-                  <label for="latitude" class="field-label">Latitude <span class="text-danger" aria-hidden="true">*</span></label>
-                  <input id="latitude" type="number" inputmode="decimal" step="any" formControlName="latitude" class="field-input" [attr.aria-invalid]="isInvalid('latitude')" placeholder="e.g. 30.0444" />
-                  @if (isInvalid('latitude')) { <p class="field-error">Enter a latitude from -90 to 90.</p> }
-                </div>
-              </div>
-              <button type="button" (click)="useCurrentLocation()" class="btn-secondary mt-5">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2m6.364 1.636-1.414 1.414M21 12h-2m-1.636 6.364-1.414-1.414M12 21v-2m-6.364-1.636 1.414-1.414M3 12h2m1.636-6.364 1.414 1.414M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>
-                Use my current location
-              </button>
             </section>
 
             <section class="glass-panel rounded-2xl p-6 sm:p-8" aria-labelledby="evidence-heading">
@@ -246,7 +315,7 @@ function coordinate(min: number, max: number): ValidatorFn {
     </main>
   `,
 })
-export class ReportsPageComponent {
+export class ReportsPageComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly reports = inject(ReportService);
 
@@ -257,9 +326,37 @@ export class ReportsPageComponent {
   protected readonly isSubmitting = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
   protected readonly locationMessage = signal<string | null>(null);
+  protected readonly locationStatus = signal<LocationStatus>('idle');
+  protected readonly detectedLocation = signal<DetectedLocation | null>(null);
+  /** Manual coordinate inputs are a fallback: hidden until detection fails or the user opts in. */
+  protected readonly showManualLocation = signal(false);
   protected readonly successReport = signal<import('../../models/report.model').ReportRecord | null>(null);
   protected readonly previewUrl = signal<string | null>(null);
   protected readonly isDragging = signal(false);
+
+  protected readonly coordinatesLabel = computed(() => {
+    const location = this.detectedLocation();
+    if (!location) {
+      return '';
+    }
+
+    return `Lat ${location.latitude.toFixed(6)} · Lon ${location.longitude.toFixed(6)}`;
+  });
+
+  protected readonly accuracyLabel = computed(() => {
+    const accuracy = this.detectedLocation()?.accuracy;
+    return typeof accuracy === 'number' ? `Accurate to about ${Math.round(accuracy)} m` : null;
+  });
+
+  protected readonly mapUrl = computed(() => {
+    const location = this.detectedLocation();
+    if (!location) {
+      return null;
+    }
+
+    const { latitude, longitude } = location;
+    return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=17/${latitude}/${longitude}`;
+  });
 
   protected readonly form = this.fb.nonNullable.group({
     title: ['', [Validators.required, trimmedLength(5, 100)]],
@@ -269,6 +366,10 @@ export class ReportsPageComponent {
     longitude: ['', [Validators.required, coordinate(-180, 180)]],
     latitude: ['', [Validators.required, coordinate(-90, 90)]],
   });
+
+  ngOnInit(): void {
+    this.detectLocation();
+  }
 
   protected isInvalid(control: keyof ReturnType<typeof this.form.getRawValue>): boolean {
     const field = this.form.controls[control];
@@ -296,24 +397,75 @@ export class ReportsPageComponent {
     }[severity];
   }
 
-  protected useCurrentLocation(): void {
+  /**
+   * Runs automatically on page load, and again on "Refresh" / "Retry detection".
+   * Writes straight into the coordinate controls so the user never types them.
+   */
+  protected detectLocation(): void {
     if (typeof navigator === 'undefined' || !navigator.geolocation) {
-      this.locationMessage.set('Location access is not available in this browser. Enter coordinates manually.');
+      this.failLocation('This browser cannot detect your location automatically.');
       return;
     }
 
-    this.locationMessage.set('Requesting your location...');
+    this.locationMessage.set(null);
+    this.locationStatus.set('locating');
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        this.form.controls.longitude.setValue(String(position.coords.longitude));
-        this.form.controls.latitude.setValue(String(position.coords.latitude));
-        this.form.controls.longitude.markAsDirty();
-        this.form.controls.latitude.markAsDirty();
-        this.locationMessage.set('Location selected. Coordinates are ready to submit.');
-      },
-      () => this.locationMessage.set('We could not access your location. Enter coordinates manually.'),
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      (position) => this.applyLocation(position.coords),
+      (error) => this.failLocation(this.geolocationMessage(error)),
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
+  }
+
+  /** Reveals the manual coordinate inputs when the detected position is not usable. */
+  protected enableManualLocation(): void {
+    this.showManualLocation.set(true);
+  }
+
+  private applyLocation(coords: GeolocationCoordinates): void {
+    const { longitude, latitude, accuracy } = coords;
+
+    if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) {
+      this.failLocation('Your device returned an invalid position.');
+      return;
+    }
+
+    this.form.controls.longitude.setValue(longitude.toFixed(6));
+    this.form.controls.latitude.setValue(latitude.toFixed(6));
+    this.form.controls.longitude.markAsDirty();
+    this.form.controls.latitude.markAsDirty();
+
+    this.detectedLocation.set({
+      longitude,
+      latitude,
+      accuracy: Number.isFinite(accuracy) ? accuracy : null,
+    });
+    this.locationMessage.set(null);
+    this.locationStatus.set('ready');
+
+    if (this.errorMessage() === MISSING_LOCATION_MESSAGE) {
+      this.errorMessage.set(null);
+    }
+  }
+
+  private failLocation(message: string): void {
+    this.detectedLocation.set(null);
+    this.locationMessage.set(message);
+    this.locationStatus.set('error');
+    this.showManualLocation.set(true);
+  }
+
+  private geolocationMessage(error: GeolocationPositionError): string {
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        return 'Location access is blocked. Allow it for this site in your browser settings and retry, or enter the coordinates below.';
+      case error.POSITION_UNAVAILABLE:
+        return 'Your device could not work out a position right now. Retry, or enter the coordinates below.';
+      case error.TIMEOUT:
+        return 'Locating you took too long. Retry, or enter the coordinates below.';
+      default:
+        return 'We could not detect your location. Retry, or enter the coordinates below.';
+    }
   }
 
   protected onDragOver(event: DragEvent): void {
@@ -348,8 +500,18 @@ export class ReportsPageComponent {
   }
 
   protected submit(): void {
+    // Coordinates are normally invisible, so a missing position needs its own message
+    // and must reveal the manual fallback instead of silently blocking the submit.
+    if (this.form.controls.longitude.invalid || this.form.controls.latitude.invalid) {
+      this.showManualLocation.set(true);
+      this.form.markAllAsTouched();
+      this.errorMessage.set(MISSING_LOCATION_MESSAGE);
+      return;
+    }
+
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.errorMessage.set('Please correct the highlighted fields before adding your report.');
       return;
     }
 
@@ -368,19 +530,27 @@ export class ReportsPageComponent {
     this.reports.create(request).subscribe({
       next: (response) => {
         this.isSubmitting.set(false);
+        this.errorMessage.set(null);
         this.successReport.set(response.data);
       },
       error: (error: HttpErrorResponse) => {
         this.isSubmitting.set(false);
-        this.errorMessage.set(this.apiMessage(error));
+        this.successReport.set(null);
+        this.errorMessage.set(`The report was not added. ${this.apiMessage(error)}`);
       },
     });
   }
 
   protected startAnother(): void {
     this.successReport.set(null);
+    this.errorMessage.set(null);
     this.previewUrl.set(null);
+    this.locationMessage.set(null);
+    this.detectedLocation.set(null);
+    this.showManualLocation.set(false);
+    this.locationStatus.set('idle');
     this.form.reset({ title: '', description: '', category: '', severity: '', longitude: '', latitude: '' });
+    this.detectLocation();
   }
 
   protected groupLabel(report: import('../../models/report.model').ReportRecord): string {

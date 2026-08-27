@@ -19,7 +19,7 @@ import { AuthService } from '../../../../core/services/auth.service';
     >
       <div
         aria-hidden="true"
-        class="pointer-events-none absolute -top-40 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/15 blur-[120px]"
+        class="pointer-events-none absolute -top-40 left-1/2 h-128 w-lg -translate-x-1/2 rounded-full bg-primary/15 blur-[120px]"
       ></div>
 
       <div class="relative w-full max-w-md">

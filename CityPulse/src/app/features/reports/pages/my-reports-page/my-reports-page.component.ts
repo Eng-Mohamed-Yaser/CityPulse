@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReportService } from '../../services/report.service';
 import { ReportRecord } from '../../models/report.model';
@@ -80,8 +80,34 @@ import { AuthService } from '../../../../core/services/auth.service';
                 @if (report.issueGroupId) {
                   <p class="mt-4 rounded-lg bg-primary-subtle px-3 py-2 text-xs font-semibold text-primary">Assigned to an issue group</p>
                 }
+                <div class="mt-4 flex items-center gap-2 border-t border-line pt-4">
+                  <a [routerLink]="['/reports', report._id, 'edit']" class="rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-xs font-semibold text-content transition-colors hover:border-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">Edit</a>
+                  <button type="button" (click)="confirmDelete(report)" class="rounded-lg border border-danger/30 bg-danger/10 px-3 py-1.5 text-xs font-semibold text-danger transition-colors hover:bg-danger/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-danger">Delete</button>
+                </div>
               </article>
             }
+          </div>
+        }
+
+        @if (reportToDelete(); as report) {
+          <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" (click)="cancelDelete()">
+            <div class="w-full max-w-md rounded-2xl bg-surface p-6 shadow-xl" (click)="$event.stopPropagation()">
+              <h2 class="font-display text-lg font-bold text-content">Delete report?</h2>
+              <p class="mt-2 text-sm text-content-muted">This action cannot be undone. The report "<strong>{{ report.title }}</strong>" will be permanently removed.</p>
+              <div class="mt-6 flex justify-end gap-3">
+                <button type="button" (click)="cancelDelete()" class="rounded-lg border border-line-strong bg-surface px-4 py-2 text-sm font-semibold text-content transition-colors hover:border-primary">Cancel</button>
+                <button type="button" (click)="deleteReport()" [disabled]="isDeleting()" class="rounded-lg bg-danger px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-danger/90 disabled:cursor-not-allowed disabled:opacity-60">
+                  @if (isDeleting()) {
+                    <span class="inline-flex items-center gap-2">
+                      <svg class="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/></svg>
+                      Deleting…
+                    </span>
+                  } @else {
+                    Delete
+                  }
+                </button>
+              </div>
+            </div>
           </div>
         }
       </div>
@@ -91,10 +117,13 @@ import { AuthService } from '../../../../core/services/auth.service';
 export class MyReportsPageComponent {
   private readonly reportService = inject(ReportService);
   private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   protected readonly reports = signal<readonly ReportRecord[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly reportToDelete = signal<ReportRecord | null>(null);
+  protected readonly isDeleting = signal(false);
 
   constructor() {
     this.loadReports();
@@ -123,13 +152,37 @@ export class MyReportsPageComponent {
     return `${longitude.toFixed(5)}, ${latitude.toFixed(5)}`;
   }
 
+  protected confirmDelete(report: ReportRecord): void {
+    this.reportToDelete.set(report);
+  }
+
+  protected cancelDelete(): void {
+    this.reportToDelete.set(null);
+  }
+
+  protected deleteReport(): void {
+    const report = this.reportToDelete();
+    if (!report) return;
+
+    this.isDeleting.set(true);
+    this.reportService.delete(report._id).subscribe({
+      next: () => {
+        this.reports.set(this.reports().filter((r) => r._id !== report._id));
+        this.reportToDelete.set(null);
+        this.isDeleting.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.errorMessage.set(error.error?.message ?? 'Failed to delete the report.');
+        this.reportToDelete.set(null);
+        this.isDeleting.set(false);
+      },
+    });
+  }
+
   private loadReports(): void {
     const userId = this.auth.user()?.id;
     this.reportService.getAll().subscribe({
       next: (response) => {
-        // The existing endpoint returns the authenticated feed without a
-        // user filter. Narrow it client-side to the current user's IDs and do
-        // not change the established endpoint contract.
         const mine = response.data.filter((report) => this.reportedById(report) === userId);
         this.reports.set(mine);
         this.isLoading.set(false);

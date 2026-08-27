@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import {
   CATEGORY_CONFIG,
   ISSUE_CATEGORIES,
@@ -21,6 +22,7 @@ import {
 @Component({
   selector: 'app-report-form',
   standalone: true,
+  imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <form (submit)="$event.preventDefault()" class="space-y-5" novalidate>
@@ -148,7 +150,7 @@ import {
         ></textarea>
       </div>
 
-      <button type="submit" class="btn-primary w-full">Submit incident report</button>
+       <a routerLink="/reports" class="btn-primary w-full">Open the report form</a>
 
       <p class="flex items-start gap-2 text-xs text-content-subtle">
         <svg
@@ -165,9 +167,9 @@ import {
             d="M11.25 11.25h1.5v5h-1.5v-5Zm.75-4.5h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
           />
         </svg>
-        <span>
-          This form is not connected to the reports API yet — your image stays in
-          the browser and nothing is uploaded.
+         <span>
+          This preview keeps your image in the browser. Open the full report form
+          to add the report and receive a success or failure message.
         </span>
       </p>
     </form>

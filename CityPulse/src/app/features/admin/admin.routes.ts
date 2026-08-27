@@ -3,9 +3,10 @@ import { roleGuard } from '../../core/guards/role.guard';
 
 export const ADMIN_ROUTES: Routes = [
   {
+    // Angular rejects `redirectTo` combined with `canActivate` (NG04014), and
+    // that error aborts the whole navigation. The parent `/admin` route in
+    // app.routes.ts already applies roleGuard, so this stays a plain redirect.
     path: '',
-    canActivate: [roleGuard],
-    data: { roles: ['Admin'] },
     pathMatch: 'full',
     redirectTo: 'dashboard',
   },

@@ -69,7 +69,7 @@ import {
             @for (entry of statusHistory; track entry.changedAt + '-' + entry.status) {
               <li class="relative pb-6 last:pb-0">
                 <span
-                   class="absolute top-1.5 -left-[1.4rem] h-2.5 w-2.5 rounded-full ring-4 ring-surface"
+                   class="absolute top-1.5 left-[-1.4rem] h-2.5 w-2.5 rounded-full ring-4 ring-surface"
                   [ngClass]="getStatusConfig(entry.status).indicatorClass"
                   aria-hidden="true"
                 ></span>

@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { CommonModule, DatePipe, DecimalPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -16,11 +17,12 @@ import {
   IssueGroup,
   IssueStatus,
 } from '../../../issue-groups/models/issue-group.model';
+import { AdminUserService } from '../../services/admin-user.service';
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [DatePipe, DecimalPipe, RouterLink],
+  imports: [CommonModule, FormsModule, DatePipe, DecimalPipe, RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="page-shell bg-background-alt/40">
@@ -181,6 +183,54 @@ import {
             }
           </section>
         }
+
+        <section class="glass-panel rounded-2xl p-6 sm:p-7" aria-labelledby="promote-heading">
+          <div>
+            <h2 id="promote-heading" class="font-display text-lg font-bold text-content">Promote User to Admin</h2>
+            <p class="mt-1 text-sm text-content-muted">Enter the email address of an existing citizen to grant them admin access.</p>
+          </div>
+
+          <form (ngSubmit)="promoteUser()" class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div class="flex-1">
+              <label for="promote-email" class="field-label text-xs">Email address</label>
+              <input
+                id="promote-email"
+                type="email"
+                [(ngModel)]="promoteEmail"
+                name="promoteEmail"
+                placeholder="user@example.com"
+                required
+                class="field-input mt-0"
+              />
+            </div>
+            <button
+              type="submit"
+              [disabled]="!promoteEmail || isPromoting()"
+              class="btn-primary inline-flex items-center gap-1.5 self-start sm:self-auto"
+            >
+              @if (isPromoting()) {
+                <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                Promoting…
+              } @else {
+                Promote to Admin
+              }
+            </button>
+          </form>
+
+          @if (promoteSuccess()) {
+            <div class="mt-3 flex items-start gap-2.5 rounded-xl border border-success/25 bg-success/10 px-4 py-3 text-sm text-success">
+              <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              {{ promoteSuccess() }}
+            </div>
+          }
+
+          @if (promoteError()) {
+            <div class="mt-3 flex items-start gap-2.5 rounded-xl border border-danger/25 bg-danger/10 px-4 py-3 text-sm text-danger">
+              <svg class="mt-0.5 h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              {{ promoteError() }}
+            </div>
+          }
+        </section>
       </div>
     </main>
   `,
@@ -188,6 +238,7 @@ import {
 export class AdminDashboardComponent {
   private readonly dashboard = inject(DashboardService);
   private readonly issueGroups = inject(IssueGroupService);
+  private readonly adminUser = inject(AdminUserService);
 
   protected readonly isLoading = signal(true);
   protected readonly errorMessage = signal<string | null>(null);
@@ -196,6 +247,11 @@ export class AdminDashboardComponent {
   protected readonly locations = signal<readonly GroupsByLocation[]>([]);
   protected readonly priorityGroups = signal<readonly IssueGroup[]>([]);
   protected readonly categoryConfig = CATEGORY_CONFIG;
+
+  protected promoteEmail = '';
+  protected readonly isPromoting = signal(false);
+  protected readonly promoteSuccess = signal<string | null>(null);
+  protected readonly promoteError = signal<string | null>(null);
 
   constructor() {
     this.load();
@@ -264,5 +320,25 @@ export class AdminDashboardComponent {
       Resolved: 'status-badge status-resolved',
     };
     return classes[status];
+  }
+
+  protected promoteUser(): void {
+    if (!this.promoteEmail || this.isPromoting()) return;
+
+    this.isPromoting.set(true);
+    this.promoteSuccess.set(null);
+    this.promoteError.set(null);
+
+    this.adminUser.promoteToAdmin(this.promoteEmail).subscribe({
+      next: (res) => {
+        this.promoteSuccess.set(res.message);
+        this.promoteEmail = '';
+        this.isPromoting.set(false);
+      },
+      error: (err: HttpErrorResponse) => {
+        this.promoteError.set(err.error?.message ?? 'Failed to promote user');
+        this.isPromoting.set(false);
+      },
+    });
   }
 }

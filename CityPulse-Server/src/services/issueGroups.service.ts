@@ -6,6 +6,7 @@ import {
     type IssueStatus,
     type HydratedIssueGroupDocument
 } from "../models/issueGroupe.model.js";
+import { AppError } from "../utils/appError.js";
 
 const GROUPING_RADIUS_METERS = 50;
 
@@ -94,7 +95,7 @@ export const findOrCreateGroup = async (
     }
     existingGroup.reportCount += 1;
     existingGroup.lastReportAt = new Date();
-    await existingGroup.escalateSeverity(severity);
+    await existingGroup.escalateSeverity(severity, session);
     existingGroup.priorityScore = calculatePriorityScore(
         existingGroup.reportCount,
         existingGroup.severity,
@@ -189,7 +190,14 @@ export const escalateIssueGroupSeverity = async (
     severity: IssueSeverity
 ): Promise<HydratedIssueGroupDocument> => {
     const issueGroup = await getIssueGroupById(id);
+    const previousSeverity = issueGroup.severity;
     await issueGroup.escalateSeverity(severity);
+    if (issueGroup.severity === previousSeverity) {
+        throw new AppError(
+            `Cannot downgrade severity from ${previousSeverity} to ${severity}`,
+            400
+        );
+    }
     issueGroup.priorityScore = calculatePriorityScore(
         issueGroup.reportCount,
         issueGroup.severity,

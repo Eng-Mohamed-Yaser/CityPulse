@@ -1,15 +1,58 @@
-<main class="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-background px-4 py-16">
-  <section class="glass-panel w-full max-w-lg rounded-3xl p-8 text-center sm:p-12" aria-labelledby="forbidden-heading">
+<main class="flex min-h-[calc(100vh-4rem)] items-center justify-center bg-background-alt/40 px-4 py-16">
+  <section
+    class="glass-panel w-full max-w-xl rounded-3xl p-8 text-center sm:p-12"
+    aria-labelledby="forbidden-heading"
+    role="alert"
+  >
     <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-danger/10 text-danger">
       <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 10.5h10.5a2.25 2.25 0 0 0 2.25-2.25v-6a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 12.75v6A2.25 2.25 0 0 0 6.75 21Z" />
       </svg>
     </span>
+
     <p class="mt-6 font-display text-6xl font-extrabold tracking-tight text-danger">403</p>
-    <h1 id="forbidden-heading" class="mt-3 font-display text-2xl font-bold text-content">Access Restricted</h1>
-    <p class="mx-auto mt-3 max-w-sm text-sm leading-relaxed text-content-muted">
-      You are signed in, but your account does not have permission to access this administration area.
+    <h1 id="forbidden-heading" class="mt-3 font-display text-2xl font-bold text-content">
+      Access Restricted
+    </h1>
+
+    <p class="mx-auto mt-3 max-w-md text-sm leading-relaxed text-content-muted">
+      @if (isAuthenticated()) {
+        Your account does not have permission to open this page. This area is
+        limited to CityPulse administrators.
+      } @else {
+        You need to sign in with an account that has permission to open this page.
+      }
     </p>
-    <a routerLink="/" class="btn-primary mt-8">Return Home</a>
+
+    @if (attemptedUrl(); as blockedUrl) {
+      <div class="mt-6 rounded-xl border border-line bg-surface px-4 py-3 text-left">
+        <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-content-subtle">
+          Blocked address
+        </p>
+        <p class="mt-1 break-all font-mono text-xs text-content-muted">{{ blockedUrl }}</p>
+      </div>
+    }
+
+    @if (user(); as account) {
+      <div class="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-content-muted">
+        <span>Signed in as</span>
+        <span class="font-semibold text-content">{{ account.email }}</span>
+        <span
+          class="rounded-full border border-line bg-background-alt px-2 py-0.5 font-semibold text-content-muted"
+        >
+          {{ account.role }}
+        </span>
+      </div>
+    }
+
+    <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+      <a routerLink="/" class="btn-primary w-full sm:w-auto">Return Home</a>
+
+      @if (isAuthenticated()) {
+        <a routerLink="/reports/mine" class="btn-secondary w-full sm:w-auto">Go to My Reports</a>
+      } @else {
+        <a routerLink="/auth/login" class="btn-secondary w-full sm:w-auto">Sign In</a>
+      }
+    </div>
   </section>
 </main>

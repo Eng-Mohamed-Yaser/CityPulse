@@ -1,19 +1,20 @@
 /**
- * Auth contracts.
+ * Auth contracts aligned to the current server at CityPulse-Server/src/.
  *
- * These mirror the shapes the existing CityPulse server already returns from
- * `/api/auth/*` (see CityPulse-Server/src/controllers/auth.controller.ts and
- * services/auth.service.ts). They are declared here because the Angular and
- * server projects have separate tsconfigs and cannot share types — this is not
- * a duplicated model of an existing Angular interface.
- *
- * Nothing in this file changes a backend contract.
+ * Server state (verified 2026-08-26):
+ * - Routes mounted at /api/auth (via app.ts)
+ * - Register returns { success, message, data: { user, accessToken, refreshToken } }
+ * - Login returns { success, message, data: { user, accessToken, refreshToken } }
+ * - Refresh returns { success, message, data: { accessToken, refreshToken } }
+ * - Logout returns { success, message }
+ * - Refresh token is also sent as httpOnly cookie (citypulse_refresh_token)
+ * - Role enum is capitalized: "Citizen" | "Admin"
  */
 
 /** Server enum: CityPulse-Server/src/models/user.models.ts */
 export type UserRole = 'Citizen' | 'Admin';
 
-/** Public user projection returned by register/login. */
+/** Public user projection decoded from the JWT and persisted locally. */
 export interface AuthUser {
   readonly id: string;
   readonly name: string;
@@ -26,40 +27,61 @@ export interface LoginRequest {
   readonly password: string;
 }
 
+/** Registration fields submitted by the frontend form. */
 export interface RegisterRequest {
   readonly name: string;
   readonly email: string;
   readonly password: string;
 }
 
-/** `POST /api/auth/login` (200) and `POST /api/auth/register` (201). */
+/** POST /api/auth/register — 201: { success, message, data: { user, accessToken, refreshToken } } */
 export interface AuthResponse {
   readonly success: boolean;
   readonly message: string;
   readonly data: {
     readonly user: AuthUser;
     readonly accessToken: string;
+    readonly refreshToken: string;
   };
 }
 
-/** `POST /api/auth/refresh` (200) — refresh token travels as an httpOnly cookie. */
+/** POST /api/auth/refresh — 200: { success, message, data: { accessToken, refreshToken } } */
 export interface RefreshResponse {
   readonly success: boolean;
   readonly message: string;
   readonly data: {
     readonly accessToken: string;
+    readonly refreshToken: string;
   };
 }
 
-/** `POST /api/auth/logout` (200). */
+/** POST /api/auth/logout — 200: { success, message } */
 export interface LogoutResponse {
   readonly success: boolean;
   readonly message: string;
 }
 
-/** Error envelope emitted by errorHandler.middleware.ts. */
-export interface ApiErrorResponse {
+/** JWT access token payload (from generatetoken payload shape in token.services.ts) */
+export interface JwtUserPayload {
+  readonly id: string;
+  readonly email: string;
+  readonly role: UserRole;
+}
+
+/** Validation error envelope from validate.middleware.ts */
+export interface ValidationErrorResponse {
   readonly success: false;
   readonly message: string;
-  readonly errors?: readonly { readonly field: string; readonly message: string }[];
+  readonly errors: readonly {
+    readonly type: string;
+    readonly msg: string;
+    readonly path: string;
+    readonly location: string;
+  }[];
+}
+
+/** Generic server error envelope. */
+export interface ErrorResponse {
+  readonly msg: string;
+  readonly message?: string;
 }

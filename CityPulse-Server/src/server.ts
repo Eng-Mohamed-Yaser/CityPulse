@@ -1,41 +1,16 @@
-import express from "express";
-import { RouterUser } from "./routes/user.route.js";
-import { connectDB } from "./config/database.js";
-import { env } from "./config/env.config.js";
-import {router} from "./routes/issueGroups.routes.js";
-import {BoardRouter} from "./routes/dashboard.route.js";
-import {ReportRouter} from "./routes/reports.routes.js";
-import { notFound } from './middleware/notFound.middleware.js';
-import {errorHandler} from './middleware/errorHandler.middleware.js';
-import cors from "cors";
+import app from "./app.js";
+import { connectDB } from "./Config/database.js";
+import { env } from "./Config/env.config.js";
 
-const app = express();
-const Port = env.PORT;
-
-app.use(cors())
-
-
-app.use(express.json());
-
-app.use("/users", RouterUser);  ////////////////////// User //////////////////////////////
-
-app.use("/issue" , router);     ////////////////////// Issue //////////////////////////////
-
-app.use("/report" , ReportRouter); ////////////////////// Report //////////////////////////////
-
-app.use("/board" ,BoardRouter );   ////////////////////// Dashboard //////////////////////////////
-
-
-app.use(notFound)
-app.use(errorHandler)
+const PORT = env.PORT;
 
 async function startServer() {
-  try{
+  try {
     await connectDB();
 
-    app.listen(Port, () => {
-    console.log(`Server running on http://localhost/${Port}`);
-  });
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
   } catch (error) {
     console.error("Failed to start server:", error);
     process.exit(1);

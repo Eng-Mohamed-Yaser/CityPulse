@@ -303,7 +303,7 @@ type ViewMode = 'grid' | 'table';
         <!-- Table -->
         @if (!store.isLoading() && store.filteredGroups().length > 0 && viewMode() === 'table') {
            <div class="glass-panel overflow-x-auto rounded-2xl">
-             <table class="w-full min-w-[760px] text-left text-sm">
+             <table class="w-full min-w-190 text-left text-sm">
                <thead class="border-b border-line bg-background-alt/70">
                  <tr class="text-[11px] font-semibold uppercase tracking-[0.12em] text-content-subtle">
                   <th scope="col" class="px-4 py-3 font-semibold">Category</th>

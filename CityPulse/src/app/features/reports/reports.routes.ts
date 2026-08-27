@@ -12,6 +12,15 @@ export const REPORTS_ROUTES: Routes = [
     title: 'My Reports - CityPulse',
   },
   {
+    path: ':id/edit',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/edit-report-page/edit-report-page.component').then(
+        (m) => m.EditReportPageComponent
+      ),
+    title: 'Edit Report - CityPulse',
+  },
+  {
     path: '',
     pathMatch: 'full',
     canActivate: [authGuard],

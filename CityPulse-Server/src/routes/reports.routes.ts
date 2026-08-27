@@ -1,21 +1,58 @@
 import { Router } from "express";
+
 import {
     createReport,
     getAllReports,
     getReportById,
     updateReport,
-    deleteReport
-} from "../controller/reports.controller.js";
+    deleteReport,
+} from "../controllers/reports.controller.js";
+
 import { validateReport } from "../validators/reports.validator.js";
-import { validate } from "../middleware/validate.middleware.js";
-import { Authentication } from "../middleware/Authentication.middleware.js";
-import { AuthorizationAdmin } from "../middleware/Authorization.middle.js";
+import { validate } from "../middleware/validation.middleware.js";
 
-export const ReportRouter = Router();
+import { authenticate } from "../middleware/auth.middleware.js";
+import { authorize } from "../middleware/authorize.middleware.js";
 
-ReportRouter.post("/", Authentication, validateReport, validate, createReport);
-ReportRouter.get("/", Authentication, getAllReports);
-ReportRouter.get("/:id",Authentication, getReportById);
-ReportRouter.put("/:id",Authentication, AuthorizationAdmin, validateReport, validate, updateReport);
-ReportRouter.delete("/:id",Authentication,AuthorizationAdmin, deleteReport);
+const router = Router();
 
+router.post(
+    "/",
+    authenticate,
+    validateReport,
+    validate,
+    createReport
+);
+
+
+router.get(
+    "/",
+    authenticate,
+    getAllReports
+);
+
+
+router.get(
+    "/:id",
+    authenticate,
+    getReportById
+);
+
+
+router.put(
+    "/:id",
+    authenticate,
+    authorize("admin", "citizen"),
+    validateReport,
+    validate,
+    updateReport
+);
+
+router.delete(
+    "/:id",
+    authenticate,
+    authorize("admin"),
+    deleteReport
+);
+
+export default router;

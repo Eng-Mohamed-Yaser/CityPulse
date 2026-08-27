@@ -8,7 +8,7 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ) {
-  console.error(err);
+  console.error(JSON.stringify(err));
 
   if (err instanceof AppError) {
     res.status(err.statusCode).json({

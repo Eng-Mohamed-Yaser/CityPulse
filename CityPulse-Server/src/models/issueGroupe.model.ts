@@ -66,7 +66,10 @@ export interface IIssueGroupMethods {
     note?: string | null,
   ): Promise<HydratedIssueGroupDocument>;
 
-  escalateSeverity( newSeverity: IssueSeverity, ): Promise<HydratedIssueGroupDocument>;
+  escalateSeverity(
+    newSeverity: IssueSeverity,
+    session?: mongoose.ClientSession,
+  ): Promise<HydratedIssueGroupDocument>;
 }
 
 export interface IIssueGroupModel extends Model<
@@ -300,7 +303,10 @@ issueGroupSchema.methods.updateStatus = async function (
    Instance Method: Escalate Severity
 ========================================================= */
 
-issueGroupSchema.methods.escalateSeverity = async function (newSeverity: IssueSeverity,): Promise<HydratedIssueGroupDocument> {
+issueGroupSchema.methods.escalateSeverity = async function (
+  newSeverity: IssueSeverity,
+  session?: mongoose.ClientSession,
+): Promise<HydratedIssueGroupDocument> {
   const currentIndex = ISSUE_SEVERITIES.indexOf(this.severity);
   const newIndex = ISSUE_SEVERITIES.indexOf(newSeverity);
 
@@ -320,7 +326,7 @@ issueGroupSchema.methods.escalateSeverity = async function (newSeverity: IssueSe
 
   this.severity = newSeverity;
 
-  return this.save();
+  return this.save(session ? { session } : undefined);
 };
 
 /* =========================================================

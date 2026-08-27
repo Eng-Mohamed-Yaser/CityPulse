@@ -1,55 +1,59 @@
-import mongoose from "mongoose";
+import { Schema, model, type HydratedDocument, type Model, } from 'mongoose';
 
-const MongoUser = new mongoose.Schema({
-    name:{
-        type:String,
-        required:true,
-        trim:true,
-        maxlength: 10,
-        minlength: 3,
+export type UserRole = 'citizen' | 'admin';
+
+export interface IUser {
+  name: string;
+  email: string;
+  passwordHash: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export type HydratedUserDocument = HydratedDocument<IUser>;
+
+const userSchema = new Schema<IUser>(
+  {
+    name: {
+      type: String,
+      required: [true, 'Name is required'],
+      trim: true,
+      minlength: [2, 'Name must be at least 2 characters'],
+      maxlength: [100, 'Name cannot exceed 100 characters'],
     },
 
-    email:{
-        type:String,
-        required:true,
-        trim:true,
-        unique: true,
-        validate:{
-            validator: (emailInput) => {
-                return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput);
-      },
-      message: "Error in Email patern  > eamail@ gmail.com",
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      index: true,
+    },
+
+    passwordHash: {
+      type: String,
+      required: [true, 'Password is required'],
+      minlength: 8,
+      select: false,
+    },
+
+    role: {
+      type: String,
+      enum: ['citizen', 'admin'],
+      default: 'citizen',
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
+  {
+    timestamps: true,
+  }
+);
 
-
-  passwordHash:{
-    type: String,
-    required: true,
-    trim:true,
-  },
-
-  role:{
-    type: String,
-    enum:{
-        values:["admin","citizen"],
-        message:"Please Enter The role",
-    },
-    required:true,
-    trim:true,
-  },
-
-  isActive:{
-    type:Boolean,
-    default: true,
-  },
-
-})
-
-export const UserModel = mongoose.model("Users",MongoUser);
-
-
-
-
-
-
+export const User: Model<IUser> = model<IUser>('User', userSchema);

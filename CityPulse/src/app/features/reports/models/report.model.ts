@@ -15,6 +15,18 @@ export interface CreateReportRequest {
   readonly imageUrl?: string | null;
 }
 
+/** Flat request shape for updating a report via PUT /api/reports/:id. */
+export interface UpdateReportRequest {
+  readonly title?: string;
+  readonly description?: string;
+  readonly category?: IssueCategory;
+  readonly severity?: IssueSeverity;
+  readonly status?: IssueStatus;
+  readonly longitude?: number;
+  readonly latitude?: number;
+  readonly imageUrl?: string | null;
+}
+
 export interface ReportLocation {
   readonly type: 'Point';
   /** GeoJSON order: [longitude, latitude]. */
